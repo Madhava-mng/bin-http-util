@@ -1,0 +1,51 @@
+#! /bin/env python3
+from requests import post, exceptions
+from sys import argv as _argv
+from json import loads,decoder
+from argparse import ArgumentParser as _argp
+
+
+
+def http_post(url, data, header= '{}', body = True, verbose=True):
+    try:
+        if(verbose):
+            print("\u001b[32m• Target\u001b[0m:", url)
+        res = post(url, data=loads(data), headers=loads(header))
+        if(verbose):
+            print("\u001b[32m< Data\u001b[0m:", data)
+            if(header != '{}'):
+                print("\u001b[32m< Head\u001b[0m:", header)
+            print("\u001b[33m> POST/{} :{}\u001b[0m".format(res.status_code,res.reason))
+            for h in res.headers.keys():
+                print("\u001b[32m> \u001b[37;1m{}\u001b[0m: {}".format(h,res.headers[h]))
+        if(body):
+            print(res.text)
+        res.close()
+    except decoder.JSONDecodeError:
+        print("http-post: data: Need json format with in ' apostrophe '{\"key\":\"value\"}' " )
+    except exceptions.InvalidURL:
+        print("http-post: InvalideURL:", url)
+    except exceptions.ConnectionError:
+        print("http-post: UnReachable:", url)
+    print("\u001b[0m",  end='')
+
+
+
+ap = _argp(description="simple tool to taggle post request.",
+        epilog="""Eg: http-post http://hostname/post -d '{"user":"pass"}'""")
+ap.add_argument("URL", metavar="URL", type=str, help="target url")
+ap.add_argument("-v", action='store_true', help="print verbose output")
+ap.add_argument("-d", required=True,dest="data",type=str, help="pass data in json format without a space with in ' apostrophe. eg: '{\"user\":\"admin\",\"passwd\":\"secret\"}'.")
+ap.add_argument("-H",dest="header", default="{}", type=str,  help="add header in json format without a space with in ' apostrophe. eg: '{\"key\":\"5up3r_53cr3t\"}'.")
+ap.add_argument("-b", action='store_false', help="hide body")
+
+arg_ = ap.parse_args()
+
+DATA = arg_.data
+URL = arg_.URL
+VERBOSE = arg_.v
+BODY = arg_.b
+HEAD = arg_.header
+
+
+http_post(URL, DATA, HEAD, BODY, VERBOSE)
