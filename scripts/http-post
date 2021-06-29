@@ -1,21 +1,31 @@
-#! /bin/env python3
+#! /bin/env python
+
 from requests import post, exceptions
 from sys import argv as _argv
 from json import loads,decoder
 from argparse import ArgumentParser as _argp
+from random import choice as _choice
 
+USER_AGENTS = [
+        "Mozilla/5.0 (X11; Linux x86_64; rv:89.0) Gecko/20100101 Firefox/89.0",
+        "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0; .NET CLR 1.1.4322)",
+        "Mozilla/5.0 (Linux; Android 8.0.0; SM-G960F Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.84 Mobile Safari/537.36",
+        "Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Mobile/15E148 Safari/604.1"
+        ]
 
 
 def http_post(url, data, header= '{}', body = True, verbose=True):
     try:
+        header = loads(header)
+        if 'User-Agent' not in header.keys():
+            header['User-Agent'] = _choice(USER_AGENTS)
         if(verbose):
             print("\u001b[32m• Target\u001b[0m:", url)
-        res = post(url, data=loads(data), headers=loads(header))
+        res = post(url, data=loads(data), headers=header)
         if(verbose):
-            print("\u001b[32m< Data\u001b[0m:", data)
-            if(header != '{}'):
-                print("\u001b[32m< Head\u001b[0m:", header)
-            print("\u001b[33m> POST/{} :{}\u001b[0m".format(res.status_code,res.reason))
+            print("\n\u001b[32m< Data\u001b[0m:", data)
+            print("\n\u001b[32m< Head\u001b[0m:", header)
+            print("\n\u001b[33m> POST/{} :{}\u001b[0m\n".format(res.status_code,res.reason))
             for h in res.headers.keys():
                 print("\u001b[32m> \u001b[37;1m{}\u001b[0m: {}".format(h,res.headers[h]))
         if(body):
@@ -31,12 +41,12 @@ def http_post(url, data, header= '{}', body = True, verbose=True):
 
 
 
-ap = _argp(description="simple tool to taggle post request.",
+ap = _argp(description="simple tool for taggle post request.        (Madhava-mng)",
         epilog="""Eg: http-post http://hostname/post -d '{"user":"pass"}'""")
 ap.add_argument("URL", metavar="URL", type=str, help="target url")
 ap.add_argument("-v", action='store_true', help="print verbose output")
-ap.add_argument("-d", required=True,dest="data",type=str, help="pass data in json format without a space with in ' apostrophe. eg: '{\"user\":\"admin\",\"passwd\":\"secret\"}'.")
-ap.add_argument("-H",dest="header", default="{}", type=str,  help="add header in json format without a space with in ' apostrophe. eg: '{\"key\":\"5up3r_53cr3t\"}'.")
+ap.add_argument("-d", required=True,dest="data",type=str, help="pass data in json format with in ' apostrophe. eg: '{\"user\":\"admin\",\"passwd\":\"secret\"}'.")
+ap.add_argument("-H",dest="header", default="{}", type=str,  help="add header in json format with in ' apostrophe. eg: '{\"key\":\"5up3r_53cr3t\"}'.")
 ap.add_argument("-b", action='store_false', help="hide body")
 
 arg_ = ap.parse_args()
